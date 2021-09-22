@@ -1,7 +1,7 @@
 #r "nuget: Akka.FSharp" 
 #r "nuget: Akka.TestKit"
 #r "nuget: Akka.Remote"
-#load "src/FindCoin.fsx"
+#load "FindCoin.fsx"
 
 open System
 open Akka.FSharp
