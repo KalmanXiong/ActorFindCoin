@@ -1,4 +1,4 @@
-module FindCoin
+//module FindCoin
 #r "nuget: Akka"
 #r "nuget: Akka.FSharp"
 #r "System"
@@ -13,7 +13,7 @@ let rec increaseBytes (index, bytesArray:byte[]) : byte[] =
     while index > (bytes.Length- 1) do
         bytes <- Array.append bytes [|0x20uy|]
         //bytesArray
-    if index < 0 then
+    if index = 0 then
         bytes <- Array.append bytes [|0x20uy|]
         increaseBytes (bytes.Length - 1, bytes)
     elif bytes.[index] = 0x7fuy then
@@ -55,15 +55,25 @@ let ByteToHex bytes =
 
 let ConcatArray stringArray = String.Join(null, (ByteToHex  stringArray))
 
-let findCoin (s:string, num:int) =
+let findCoin (s:string, num:int, protectedIndex:int) =
     let mutable isFindCoin = false
-    let  srcBytes = System.Text.Encoding.ASCII.GetBytes(s)
+    let srcBytes = System.Text.Encoding.ASCII.GetBytes(s)
+    let mutable proBytes = [|0x20uy|]
     let mutable bytes = [|0x20uy|]
     let mutable  bindBytes = [|0x20uy|]
-    printfn "Let's find coins! The preString is %s, The num is %d" s num
+    if protectedIndex <= 0 then
+        proBytes <- Array.sub srcBytes 0 0
+        bytes <- Array.sub srcBytes 0 srcBytes.Length
+    elif srcBytes.Length <= protectedIndex then
+        proBytes <- srcBytes
+    else 
+        proBytes <- Array.sub srcBytes 0 protectedIndex
+        bytes <- Array.sub srcBytes protectedIndex (srcBytes.Length - protectedIndex)
+    let tempStr = System.Text.Encoding.ASCII.GetString(proBytes)
+    printfn "Let's find coins! The protectedString is %s, The num is %d" tempStr num
     
     while not isFindCoin do
-        bindBytes <- Array.append srcBytes bytes
+        bindBytes <- Array.append proBytes bytes
         isFindCoin <- juedgeBytes(bindBytes, num)
         if isFindCoin then
             // let str = System.Text.Encoding.ASCII.GetString bindBytes

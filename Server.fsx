@@ -33,7 +33,7 @@ let configuration =
         }")
 
 type MessageSystem =
-    | TransitMsg of int * string * string * int
+    | TransitMsg of int * string * string * int * int
 
 let actor_num = 10
 let system = System.create "Server" configuration
@@ -41,13 +41,13 @@ let system = System.create "Server" configuration
 
 let myActor (mailbox: Actor<_>) = 
     let rec loop() = actor {
-        let! TransitMsg(n, content, param, num) = mailbox.Receive()
+        let! TransitMsg(n, content, param, num, protedIndex) = mailbox.Receive()
         let sender = mailbox.Sender()
         let mutable s = "0"
         match content with
-        | "go to work" -> printfn "local actor %d start to work" n ; s <- FindCoin.findCoin(param, num)
+        | "go to work" -> printfn "local actor %d start to work" n ; s <- FindCoin.findCoin(param, num, protedIndex)
         | _ -> printfn "actor don't understand"
-        let returnMsg = sprintf "bitcoin;%d;%s;" n s
+        let returnMsg = sprintf "bitcoin;%d;%s;%d" n s protedIndex
         sender <! returnMsg
         return! loop()
     }
@@ -60,6 +60,7 @@ let myMonitor (mailbox: Actor<string>) =
     let mutable actorAppendNum = 0
     let mutable actori = 0
     let mutable zeroNum = 0
+    let mutable protectedIndex = 0
     // let mutable zeroNumArray = Array.create actor_num 0
 
     let actorArray = Array.create actor_num (spawn system "myActor" myActor)
@@ -99,7 +100,8 @@ let myMonitor (mailbox: Actor<string>) =
                         // zeroNumArray.[a] <- int(parseMsg.[4])
                         zeroNum <- int(parseMsg.[4])
                         let s = parseMsg.[3] + System.Text.Encoding.ASCII.GetString( [|byte(0x20 + a)|])
-                        actorArray.[a] <! TransitMsg(a, "go to work", s,zeroNum)
+                        protectedIndex <- s.Length
+                        actorArray.[a] <! TransitMsg(a, "go to work", s, zeroNum, protectedIndex)
                         ()
                             );actorAppendNum <- actorCountNum+actorAppendNum
                       
@@ -109,13 +111,13 @@ let myMonitor (mailbox: Actor<string>) =
             | "bitcoin" ->  printfn "bitcoin: %s" parseMsg.[2];
                             actori <- int(parseMsg.[1]);
                             let strTemp = FindCoin.increaseString(parseMsg.[2])
-                            actorArray.[actori] <! TransitMsg(actori, "go to work", strTemp, zeroNum);
+                            actorArray.[actori] <! TransitMsg(actori, "go to work", strTemp, zeroNum, protectedIndex);
             
             | "client bitcoin" -> printfn "client bitcoin: %s" parseMsg.[2];
                                   for i in 0..client_count-1 do
                                     if clientAddArray.[i] = parseMsg.[1] then
                                         let tempStr = FindCoin.increaseString(parseMsg.[2])
-                                        let cMsg = sprintf "go to work; ;%s;%d"  tempStr zeroNum
+                                        let cMsg = sprintf "go to work; ;%s;%d;%d"  tempStr zeroNum protectedIndex
                                         clientRefs.[i] <! cMsg
 
             | _ -> printfn "manager doesn't understand"             
@@ -126,5 +128,5 @@ let myMonitor (mailbox: Actor<string>) =
 let serverRef = spawn system "server" myMonitor
 printfn "server initial"
 
-serverRef <! "start; ;2;xiongruoyang;7";; 
+serverRef <! "start; ;2;xiongruoyang;5";; 
 System.Console.ReadLine() |> ignore
