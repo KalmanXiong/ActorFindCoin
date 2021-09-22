@@ -107,17 +107,16 @@ let myMonitor (mailbox: Actor<string>) =
             | "bitcoin" ->  printfn "bitcoin: %s" parseMsg.[2];
                             actori <- int(parseMsg.[1]);
                             // zeroNumArray.[actori] <- zeroNumArray.[actori] + 1;
-                            let cMsg = sprintf "go to work; ;%s" parseMsg.[2]
                             actorArray.[actori] <! TransitMsg(actori, "go to work", parseMsg.[2], zeroNumArray.[actori]);
             
             | "client bitcoin" -> printfn "client bitcoin: %s" parseMsg.[2];
+                                  let mutable temp_str = ""
                                   for i in 0..client_count-1 do
                                     if clientAddArray.[i] = parseMsg.[1] then
-                                        let cMsg = sprintf "go to work; ;%s" parseMsg.[2] //自增后的任务
+                                        temp_str <- FindCoin.increaseString(parseMsg.[2])
+                                        let cMsg = sprintf "go to work; ;%s" temp_str  
                                         clientRefs.[i] <! cMsg
 
-            
-                                  
             | _ -> printfn "manager doesn't understand"             
             return! loop()
         }
