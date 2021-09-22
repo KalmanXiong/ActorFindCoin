@@ -66,11 +66,13 @@ let findCoin (s:string, num:int) =
         bindBytes <- Array.append srcBytes bytes
         isFindCoin <- juedgeBytes(bindBytes, num)
         if isFindCoin then
-            let str = System.Text.Encoding.ASCII.GetString bindBytes
-            let strHex = ConcatArray bindBytes
-            let hashBytes = SHA256.Create().ComputeHash(bindBytes)
-            let hashStr = ConcatArray hashBytes
-            printfn "Find coin! The coin is %s, The size of str is %d, The hex of str is %s, The hash hex is %s" str str.Length strHex hashStr
+            // let str = System.Text.Encoding.ASCII.GetString bindBytes
+            // let strHex = ConcatArray bindBytes
+            // let hashBytes = SHA256.Create().ComputeHash(bindBytes)
+            // let hashStr = ConcatArray hashBytes
+            // printfn "Find coin! The coin is %s, The size of str is %d, The hex of str is %s, The hash hex is %s" str str.Length strHex hashStr
+            printfn "Find coin!"
         else
             //printfn "Don't find coin,The pre is %s" s
             bytes <- increaseBytes(bytes.Length - 1, bytes)
+    System.Text.Encoding.ASCII.GetString bindBytes
