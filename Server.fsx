@@ -27,7 +27,7 @@ let configuration =
             remote {
                 helios.tcp {
                     port = 9003
-                    hostname = 127.0.0.1
+                    hostname = 10.136.28.175
                 }
             }
         }")
@@ -59,7 +59,8 @@ let myMonitor (mailbox: Actor<string>) =
     let mutable actorCountNum = 0
     let mutable actorAppendNum = 0
     let mutable actori = 0
-    let mutable zeroNumArray = Array.create actor_num 0
+    let mutable zeroNum = 0
+    // let mutable zeroNumArray = Array.create actor_num 0
 
     let actorArray = Array.create actor_num (spawn system "myActor" myActor)
     {0..actor_num-1} |> Seq.iter (fun a ->
@@ -89,32 +90,34 @@ let myMonitor (mailbox: Actor<string>) =
                                 clientAddArray  <- [|parseMsg.[1]|] |> Array.append clientAddArray;
                                 clientRefs  <- [|select (parseMsg.[1]) system|] |> Array.append clientRefs;
                                 client_count <- client_count+1;
-                            
-                            let cMsg = sprintf "go to work; ;%s" parseMsg.[2]//新任务
+                            let s = parseMsg.[2] + System.Text.Encoding.ASCII.GetString( [|byte(0x20 + actorCountNum)|])
+                            let cMsg = sprintf "go to work; ;%s;%d" parseMsg.[2] zeroNum//new task
                             clientRefs.[client_count-1] <! cMsg
                             printfn "Count %d, Welcome: %s" client_count parseMsg.[1];
 
             | "start" -> actorAppendNum <- int(parseMsg.[2]);{actorCountNum..actorCountNum+actorAppendNum-1} |> Seq.iter(fun a ->
-                        zeroNumArray.[a] <- int(parseMsg.[4])
+                        // zeroNumArray.[a] <- int(parseMsg.[4])
+                        zeroNum <- int(parseMsg.[4])
                         let s = parseMsg.[3] + System.Text.Encoding.ASCII.GetString( [|byte(0x20 + a)|])
-                        actorArray.[a] <! TransitMsg(a, "go to work", s,zeroNumArray.[a])
+                        actorArray.[a] <! TransitMsg(a, "go to work", s,zeroNum)
                         ()
                             );actorAppendNum <- actorCountNum+actorAppendNum
                       
 
             // | "find nothing" -> actori <- int(parseMsg.[1]); 
-            //                     actorArray.[actori] <! TransitMsg(actori, "go to work", parseMsg.[2]); //自增后的任务
+            //                     actorArray.[actori] <! TransitMsg(actori, "go to work", parseMsg.[2]); 
             | "bitcoin" ->  printfn "bitcoin: %s" parseMsg.[2];
                             actori <- int(parseMsg.[1]);
-                            // zeroNumArray.[actori] <- zeroNumArray.[actori] + 1;
-                            actorArray.[actori] <! TransitMsg(actori, "go to work", parseMsg.[2], zeroNumArray.[actori]);
+                            let strTemp = FindCoin.increaseString(parseMsg.[2])
+                            let cMsg = sprintf "go to work; ;%s" strTemp
+                            actorArray.[actori] <! TransitMsg(actori, "go to work", parseMsg.[2], zeroNum);
             
             | "client bitcoin" -> printfn "client bitcoin: %s" parseMsg.[2];
                                   let mutable temp_str = ""
                                   for i in 0..client_count-1 do
                                     if clientAddArray.[i] = parseMsg.[1] then
-                                        temp_str <- FindCoin.increaseString(parseMsg.[2])
-                                        let cMsg = sprintf "go to work; ;%s" temp_str  
+                                        let tempStr = FindCoin.increaseString(parseMsg.[2])
+                                        let cMsg = sprintf "go to work; ;%s;%d"  tempStr zeroNum
                                         clientRefs.[i] <! cMsg
 
             | _ -> printfn "manager doesn't understand"             
@@ -125,5 +128,5 @@ let myMonitor (mailbox: Actor<string>) =
 let serverRef = spawn system "server" myMonitor
 printfn "server initial"
 
-serverRef <! "start; ;4;xiongruoyang;1";; 
+serverRef <! "start; ;2;xiongruoyang;7";; 
 System.Console.ReadLine() |> ignore
