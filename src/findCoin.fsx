@@ -1,10 +1,12 @@
 module FindCoin
-#r "nuget:AKKa.FSharp"
+#r "nuget: Akka"
+#r "nuget: Akka.FSharp"
+#r "System"
 open System
 open System.IO
 open System.Security.Cryptography
-open Akka.FSharp
-open Akka.Actor
+//open Akka.FSharp
+//open Akka.Actor
 
 let rec increaseBytes (index, bytesArray:byte[]) : byte[] = 
     let mutable bytes = bytesArray

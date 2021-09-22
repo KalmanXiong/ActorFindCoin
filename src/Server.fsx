@@ -1,10 +1,9 @@
 #r "nuget: Akka"
 #r "nuget: Akka.FSharp"
 #r "System"
-#r "nuget: Akka.FSharp" 
 #r "nuget: Akka.TestKit"
 #r "nuget: Akka.Remote"
-#load "FindCoin.fsx"
+#load "src/findCoin.fsx"
 
 open System
 open Akka.Actor
@@ -44,7 +43,7 @@ let myActor (mailbox: Actor<_>) =
         let! TransitMsg(n, content, param) = mailbox.Receive()
         let sender = mailbox.Sender()
         match content with
-        | "go to work" -> printfn "local actor %d start to work" n ; FindCoin.findCoin(param, 7)
+        | "go to work" -> printfn "local actor %d start to work" n ; FindCoin.findCoin(param, 8)
         | _ -> printfn "actor don't understand"
         let returnMsg = sprintf "bitcoin;%d;%s;"  n "bincoin sequence"
         sender <! returnMsg
@@ -95,5 +94,5 @@ let myMonitor (mailbox: Actor<string>) =
 
 let serverRef = spawn system "server" myMonitor
 printfn "server initial"
-serverRef <! "start; ;5";;
+serverRef <! "start; ;2";;
 System.Console.ReadLine() |> ignore
