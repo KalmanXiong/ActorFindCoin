@@ -33,7 +33,7 @@ let configuration =
         }")
 
 type MessageSystem =
-    | TransitMsg of int * string * string
+    | TransitMsg of int * string * string * int
 
 let actor_num = 10
 let system = System.create "Server" configuration
@@ -41,12 +41,13 @@ let system = System.create "Server" configuration
 
 let myActor (mailbox: Actor<_>) = 
     let rec loop() = actor {
-        let! TransitMsg(n, content, param) = mailbox.Receive()
+        let! TransitMsg(n, content, param, num) = mailbox.Receive()
         let sender = mailbox.Sender()
+        let mutable s = "0"
         match content with
-        | "go to work" -> printfn "local actor %d start to work" n ; FindCoin.findCoin(param, 8)
+        | "go to work" -> printfn "local actor %d start to work" n ; s <- FindCoin.findCoin(param, num)
         | _ -> printfn "actor don't understand"
-        let returnMsg = sprintf "bitcoin;%d;%s;"  n "bincoin sequence"
+        let returnMsg = sprintf "bitcoin;%d;%s;" n s
         sender <! returnMsg
         return! loop()
     }
@@ -55,9 +56,10 @@ let myActor (mailbox: Actor<_>) =
 // let clientRegister addr, addrArray refArray= 
 
 let myMonitor (mailbox: Actor<string>) =
-    let mutable index = 0
-    let mutable n = 0
+    let mutable actorCountNum = 0
+    let mutable actorAppendNum = 0
     let mutable actori = 0
+    let mutable zeroNumArray = Array.create actor_num 0
 
     let actorArray = Array.create actor_num (spawn system "myActor" myActor)
     {0..actor_num-1} |> Seq.iter (fun a ->
@@ -68,7 +70,7 @@ let myMonitor (mailbox: Actor<string>) =
     let mutable clientAddArray = [||]
     let mutable clientRefs = [||]
     let mutable client_count = 0
-    
+
     let rec loop() =
         actor {
             let! msg = mailbox.Receive()
@@ -90,26 +92,31 @@ let myMonitor (mailbox: Actor<string>) =
                             
                             let cMsg = sprintf "go to work; ;%s" parseMsg.[2]//新任务
                             clientRefs.[client_count-1] <! cMsg
-                            printfn "Count %d, Welcome: %s" client_count parseMsg.[1]; 
-                            
-            | "start" -> n <- int(parseMsg.[2]);{index..index+n-1} |> Seq.iter(fun a ->
-                        actorArray.[a] <! TransitMsg(a, "go to work", "init string")  //new task for local actor
+                            printfn "Count %d, Welcome: %s" client_count parseMsg.[1];
+
+            | "start" -> actorAppendNum <- int(parseMsg.[2]);{actorCountNum..actorCountNum+actorAppendNum-1} |> Seq.iter(fun a ->
+                        zeroNumArray.[a] <- int(parseMsg.[4])
+                        let s = parseMsg.[3] + System.Text.Encoding.ASCII.GetString( [|byte(0x20 + a)|])
+                        actorArray.[a] <! TransitMsg(a, "go to work", s,zeroNumArray.[a])
                         ()
-                            ); index <- n+index
+                            );actorAppendNum <- actorCountNum+actorAppendNum
+                      
 
+            // | "find nothing" -> actori <- int(parseMsg.[1]); 
+            //                     actorArray.[actori] <! TransitMsg(actori, "go to work", parseMsg.[2]); //自增后的任务
             | "bitcoin" ->  printfn "bitcoin: %s" parseMsg.[2];
-                            actori <- int(parseMsg.[1]); 
-                            actorArray.[actori] <! TransitMsg(actori, "go to work", parseMsg.[2]); //自增后的任务
-
-            | "find nothing" -> actori <- int(parseMsg.[1]); 
-                                actorArray.[actori] <! TransitMsg(actori, "go to work", parseMsg.[2]); //自增后的任务
-           
+                            actori <- int(parseMsg.[1]);
+                            // zeroNumArray.[actori] <- zeroNumArray.[actori] + 1;
+                            let cMsg = sprintf "go to work; ;%s" parseMsg.[2]
+                            actorArray.[actori] <! TransitMsg(actori, "go to work", parseMsg.[2], zeroNumArray.[actori]);
             
             | "client bitcoin" -> printfn "client bitcoin: %s" parseMsg.[2];
                                   for i in 0..client_count-1 do
                                     if clientAddArray.[i] = parseMsg.[1] then
-                                        let cMsg = sprintf "go to work; ;%s" parseMsg.[2]//自增后的任务
+                                        let cMsg = sprintf "go to work; ;%s" parseMsg.[2] //自增后的任务
                                         clientRefs.[i] <! cMsg
+
+            
                                   
             | _ -> printfn "manager doesn't understand"             
             return! loop()
@@ -118,5 +125,6 @@ let myMonitor (mailbox: Actor<string>) =
 
 let serverRef = spawn system "server" myMonitor
 printfn "server initial"
-serverRef <! "start; ;2"
+
+serverRef <! "start; ;4;xiongruoyang;1";; 
 System.Console.ReadLine() |> ignore
