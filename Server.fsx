@@ -109,11 +109,9 @@ let myMonitor (mailbox: Actor<string>) =
             | "bitcoin" ->  printfn "bitcoin: %s" parseMsg.[2];
                             actori <- int(parseMsg.[1]);
                             let strTemp = FindCoin.increaseString(parseMsg.[2])
-                            let cMsg = sprintf "go to work; ;%s" strTemp
-                            actorArray.[actori] <! TransitMsg(actori, "go to work", parseMsg.[2], zeroNum);
+                            actorArray.[actori] <! TransitMsg(actori, "go to work", strTemp, zeroNum);
             
             | "client bitcoin" -> printfn "client bitcoin: %s" parseMsg.[2];
-                                  let mutable temp_str = ""
                                   for i in 0..client_count-1 do
                                     if clientAddArray.[i] = parseMsg.[1] then
                                         let tempStr = FindCoin.increaseString(parseMsg.[2])
