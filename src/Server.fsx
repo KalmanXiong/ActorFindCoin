@@ -84,7 +84,8 @@ let myMonitor (mailbox: Actor<string>) =
 
             | "find nothing" -> actori <- int(parseMsg.[1]); 
                                 actorArray.[actori] <! TransitMsg(actori, "go to work", parseMsg.[2]);
-
+                                ///asdadadsascdwefe
+            
             | "client bitcoin" -> printfn "bitcoin: %s" parseMsg.[2]
                                   
             | _ -> printfn "manager doesn't understand"             
