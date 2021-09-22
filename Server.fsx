@@ -92,7 +92,7 @@ let myMonitor (mailbox: Actor<string>) =
                                 clientRefs  <- [|select (parseMsg.[1]) system|] |> Array.append clientRefs;
                                 client_count <- client_count+1;
                             let s = parseMsg.[2] + System.Text.Encoding.ASCII.GetString( [|byte(0x20 + actorCountNum)|])
-                            let cMsg = sprintf "go to work; ;%s;%d" parseMsg.[2] zeroNum//new task
+                            let cMsg = sprintf "go to work; ;%s;%d;%d" parseMsg.[2] zeroNum protectedIndex//new task
                             clientRefs.[client_count-1] <! cMsg
                             printfn "Count %d, Welcome: %s" client_count parseMsg.[1];
 
