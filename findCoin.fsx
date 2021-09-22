@@ -25,10 +25,10 @@ let rec increaseBytes (index, bytesArray:byte[]) : byte[] =
         bytes
 
 let increaseString (s:string) = 
-    printfn "intput string : %s, the lenth : %d" s s.Length
+    // printfn "intput string : %s, the lenth : %d" s s.Length
     let a:byte[] = System.Text.Encoding.ASCII.GetBytes(s:string)
     let s2 = System.Text.Encoding.ASCII.GetString(increaseBytes(a.Length - 1, a))
-    printfn "output string : %s, the lenth : %d" s2 s2.Length
+    //printfn "output string : %s, the lenth : %d" s2 s2.Length
     s2
 
 let juedgeBytes (bytes:byte[], num:int) =
