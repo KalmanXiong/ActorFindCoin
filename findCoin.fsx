@@ -16,7 +16,7 @@ let rec increaseBytes (index, bytesArray:byte[]) : byte[] =
     if index = 0 then
         bytes <- Array.append bytes [|0x20uy|]
         increaseBytes (bytes.Length - 1, bytes)
-    elif bytes.[index] = 0x7fuy then
+    elif bytes.[index] = 0x7euy then
         bytes.[index] <- 0x20uy
         increaseBytes (index - 1, bytes)
     else
@@ -70,7 +70,7 @@ let findCoin (s:string, num:int, protectedIndex:int) =
         proBytes <- Array.sub srcBytes 0 protectedIndex
         bytes <- Array.sub srcBytes protectedIndex (srcBytes.Length - protectedIndex)
     let tempStr = System.Text.Encoding.ASCII.GetString(proBytes)
-    printfn "Let's find coins! The protectedString is %s, The num is %d" tempStr num
+    // printfn "Let's find coins! The protectedString is %s, The num is %d" tempStr num
     
     while not isFindCoin do
         bindBytes <- Array.append proBytes bytes
@@ -81,8 +81,10 @@ let findCoin (s:string, num:int, protectedIndex:int) =
             // let hashBytes = SHA256.Create().ComputeHash(bindBytes)
             // let hashStr = ConcatArray hashBytes
             // printfn "Find coin! The coin is %s, The size of str is %d, The hex of str is %s, The hash hex is %s" str str.Length strHex hashStr
-            printfn "Find coin!"
+            // printfn "Find coin!"
+            isFindCoin <- isFindCoin
         else
             //printfn "Don't find coin,The pre is %s" s
             bytes <- increaseBytes(bytes.Length - 1, bytes)
+            // isFindCoin <- isFindCoin
     System.Text.Encoding.ASCII.GetString bindBytes

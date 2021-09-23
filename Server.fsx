@@ -12,6 +12,7 @@ open Akka.Configuration
 open Akka.FSharp
 open FindCoin
 open System.Diagnostics
+open System.Security.Cryptography
 
 let configuration = 
     ConfigurationFactory.ParseString(
@@ -37,7 +38,7 @@ let configuration =
 type MessageSystem =
     | TransitMsg of int * string * string * int * int
 
-let actor_num = 100
+let actor_num = 200
 let mutable coin_count = 0
 let system = System.create "Server" configuration
 let mutable nn = 0
@@ -47,16 +48,25 @@ let cpu_time_stamp = proc.TotalProcessorTime
 let timer = new Stopwatch()
 timer.Start()
 
+let stringToHashHex(s:string) = 
+                        let hashHex =  SHA256.Create().ComputeHash(System.Text.Encoding.ASCII.GetBytes(s));
+                        ConcatArray hashHex
+
+let parseBitcoin(s:string) =    let mutable str = s
+                                for i in 1..3 do
+                                    str <- str.[str.IndexOf(";")+1..]
+                                str
 
 let myActor (mailbox: Actor<_>) = 
     let rec loop() = actor {
         let! TransitMsg(n, content, param, num, protedIndex) = mailbox.Receive()
         let sender = mailbox.Sender()
-        let mutable s = "0"
+        let mutable s = ""
         match content with
-        | "go to work" -> printfn "local actor %d start to work" n ; s <- FindCoin.findCoin(param, num, protedIndex) 
+        | "go to work" -> s <- FindCoin.findCoin(param, num, protedIndex);
+                        // printfn "local actor %d start to work" n
         | _ -> printfn "actor don't understand"
-        let returnMsg = sprintf "bitcoin;%d;%s;%d" n s protedIndex
+        let returnMsg = sprintf "bitcoin;%d;%d;%s" n protedIndex s
         sender <! returnMsg
         return! loop()
     }
@@ -86,12 +96,12 @@ let myMonitor (mailbox: Actor<string>) =
     let rec loop() =
         actor {
             let! msg = mailbox.Receive()
-            // let sender = mailbox.Sender()
-
             let parseMsg = msg.Split ';'
-            
-            // "content;id/addr;paramter"
+
             match parseMsg.[0] with
+            // Process client registeration. If client has not been registered, create a new bucket for it
+            // If the connnection has been estibalished before, replace original connection by a new connection.
+
             | "register" -> let mutable register_already = false
                             for i in 0..client_count-1 do
                                 if parseMsg.[1] = clientAddArray.[i] then
@@ -105,9 +115,8 @@ let myMonitor (mailbox: Actor<string>) =
                             let cMsg = sprintf "go to work; ;%s;%d;%d" parseMsg.[2] zeroNum protectedIndex//new task
                             clientRefs.[client_count-1] <! cMsg
                             printfn "Count %d, Welcome: %s" client_count parseMsg.[1];
-
+            // If the server receive "start" command from the user, server begins to work.
             | "start" -> actorAppendNum <- int(parseMsg.[2]);{actorCountNum..actorCountNum+actorAppendNum-1} |> Seq.iter(fun a ->
-                        // zeroNumArray.[a] <- int(parseMsg.[4])
                         zeroNum <- int(parseMsg.[4])
                         let s = parseMsg.[3] + System.Text.Encoding.ASCII.GetString( [|byte(0x20 + a)|])
                         protectedIndex <- s.Length
@@ -119,27 +128,40 @@ let myMonitor (mailbox: Actor<string>) =
             // | "find nothing" -> actori <- int(parseMsg.[1]); 
             //                     actorArray.[actori] <! TransitMsg(actori, "go to work", parseMsg.[2]);
   
-            | "bitcoin" ->  printfn "bitcoin: %s" parseMsg.[2];
+            | "bitcoin" ->  coin_count <- coin_count+1
+                            let bincoin = parseBitcoin(msg)
+                            let hash = stringToHashHex(bincoin)
+                            printfn "%s\t%s" bincoin hash
+
                             actori <- int(parseMsg.[1]);
-                            let strTemp = FindCoin.increaseString(parseMsg.[2])
+                            let strTemp = FindCoin.increaseString(bincoin)
                             actorArray.[actori] <! TransitMsg(actori, "go to work", strTemp, zeroNum, protectedIndex);
+                            
             
-            | "client bitcoin" -> printfn "client bitcoin: %s" parseMsg.[2];
-                                  for i in 0..client_count-1 do
+            | "bitcoin client" ->coin_count <- coin_count+1
+                                 let bincoin = parseBitcoin(msg)
+                                 let hash = stringToHashHex(bincoin)
+                                 printfn "%s\t%s" bincoin hash
+                                 
+                                 for i in 0..client_count-1 do
                                     if clientAddArray.[i] = parseMsg.[1] then
-                                        let tempStr = FindCoin.increaseString(parseMsg.[2])
-                                        let cMsg = sprintf "go to work; ;%s;%d;%d"  tempStr zeroNum protectedIndex
+                                        let tempStr = FindCoin.increaseString(bincoin)
+                                        let cMsg = sprintf "go to work;%d;%d;%s"  zeroNum protectedIndex tempStr 
                                         clientRefs.[i] <! cMsg
-                                  coin_count <- coin_count+1
+                                  
 
             | _ -> printfn "manager doesn't understand"
-            let cpu_time = (proc.TotalProcessorTime-cpu_time_stamp).TotalMilliseconds
-            printfn "CPU time = %dms  Absolute time =%dms" (int64 cpu_time) timer.ElapsedMilliseconds
+
+            // Measure CPU time and the real time
+            if coin_count%100 = 0 then 
+                let cpu_time = (proc.TotalProcessorTime-cpu_time_stamp).TotalMilliseconds
+                let elapse = timer.ElapsedMilliseconds
+                printfn "CPU time = %dms  Absolute time =%dms   Ratio:%f" (int64 cpu_time) elapse (float(cpu_time)/float(elapse))
             return! loop()
         }
     loop()
 
 let serverRef = spawn system "server" myMonitor
 printfn "server initial"
-serverRef <! "start;null;3;xiongruoyang;6";;
+serverRef <! "start;null;3;xiongruoyang;7";;
 System.Console.ReadLine() |> ignore

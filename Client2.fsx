@@ -31,6 +31,11 @@ let serverRef = select (serverIP) clientSystem
 type MessageSystem =
     | TransitMsg of int * string * string
 
+let parseBitcoin(s:string) =    let mutable str = s
+                                for i in 1..3 do
+                                    str <- str.[str.IndexOf(";")+1..]
+                                str
+
 // let myActor (mailbox: Actor<_>) = 
 //     let rec loop() = actor {
 //         let! TransitMsg(n, content, param) = mailbox.Receive()
@@ -52,15 +57,17 @@ let myActor ip (mailbox: Actor<string>) =
         let! msg = mailbox.Receive()
         printfn "receive from server: %s" msg
         let parseMsg = msg.Split ';'
+
         match parseMsg.[0] with
-        | "go to work" -> printfn "local actor start to work"; 
-                          str <- FindCoin.findCoin(parseMsg.[2], int(parseMsg.[3]), int(parseMsg.[4]))
+        | "go to work" -> printfn "local actor start to work";
+                          str <- FindCoin.findCoin(parseBitcoin(msg), int(parseMsg.[1]), int(parseMsg.[2]))
         | _ -> printfn "actor don't understand"
-        let returnMsg = sprintf "client bitcoin;%s;%s"  ip str
+        let returnMsg = sprintf "client bitcoin;%s;_;%s"  ip str
         serverRef <! returnMsg
         return! loop()
     }
     loop()
+
 
 for i in 1..4 do 
     let myIP = sprintf "akka.tcp://Client@10.136.7.96:2556/user/client%d" i
