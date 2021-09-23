@@ -54,14 +54,14 @@ let myActor ip (mailbox: Actor<string>) =
         let parseMsg = msg.Split ';'
         match parseMsg.[0] with
         | "go to work" -> printfn "local actor start to work"; 
-                          str <- FindCoin.findCoin(parseMsg.[2]+" ", int(parseMsg.[3]))
+                          str <- FindCoin.findCoin(parseMsg.[2], int(parseMsg.[3]))
         | _ -> printfn "actor don't understand"
-        let returnMsg = sprintf "client bitcoin;%s;%s;"  ip str
+        let returnMsg = sprintf "client bitcoin;%s;%s"  ip str
         serverRef <! returnMsg
         return! loop()
     }
     loop()
-    
+
 for i in 1..4 do 
     let myIP = sprintf "akka.tcp://Client@10.136.7.96:2556/user/client%d" i
     let actorName = sprintf "client%d" i

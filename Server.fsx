@@ -4,6 +4,7 @@
 #r "nuget: Akka.TestKit"
 #r "nuget: Akka.Remote"
 #load "findCoin.fsx"
+// #time "on"
 
 open System
 open Akka.Actor
@@ -27,17 +28,18 @@ let configuration =
             remote {
                 helios.tcp {
                     port = 9003
-                    hostname = 10.136.28.175
+                    hostname = 127.0.0.1
                 }
             }
         }")
-
+// 10.136.28.175
 type MessageSystem =
     | TransitMsg of int * string * string * int
 
-let actor_num = 10
+let actor_num = 100
+let mutable coin_count = 0
 let system = System.create "Server" configuration
-
+let mutable nn = 0
 
 let myActor (mailbox: Actor<_>) = 
     let rec loop() = actor {
@@ -49,6 +51,10 @@ let myActor (mailbox: Actor<_>) =
         | _ -> printfn "actor don't understand"
         let returnMsg = sprintf "bitcoin;%d;%s;" n s
         sender <! returnMsg
+        // if coin_count<10 then   
+        //         return! loop()
+        //     else
+        //         printfn "---return---"
         return! loop()
     }
     loop()
@@ -71,6 +77,7 @@ let myMonitor (mailbox: Actor<string>) =
     let mutable clientAddArray = [||]
     let mutable clientRefs = [||]
     let mutable client_count = 0
+    
 
     let rec loop() =
         actor {
@@ -105,11 +112,13 @@ let myMonitor (mailbox: Actor<string>) =
                       
 
             // | "find nothing" -> actori <- int(parseMsg.[1]); 
-            //                     actorArray.[actori] <! TransitMsg(actori, "go to work", parseMsg.[2]); 
+            //                     actorArray.[actori] <! TransitMsg(actori, "go to work", parseMsg.[2]);
+  
             | "bitcoin" ->  printfn "bitcoin: %s" parseMsg.[2];
                             actori <- int(parseMsg.[1]);
                             let strTemp = FindCoin.increaseString(parseMsg.[2])
                             actorArray.[actori] <! TransitMsg(actori, "go to work", strTemp, zeroNum);
+                            coin_count <- coin_count+1
             
             | "client bitcoin" -> printfn "client bitcoin: %s" parseMsg.[2];
                                   for i in 0..client_count-1 do
@@ -117,8 +126,14 @@ let myMonitor (mailbox: Actor<string>) =
                                         let tempStr = FindCoin.increaseString(parseMsg.[2])
                                         let cMsg = sprintf "go to work; ;%s;%d"  tempStr zeroNum
                                         clientRefs.[i] <! cMsg
+                                  coin_count <- coin_count+1
 
-            | _ -> printfn "manager doesn't understand"             
+            | _ -> printfn "manager doesn't understand"
+
+            // if coin_count<10 then   
+            //     return! loop()
+            // else
+            //     printfn "---return---"
             return! loop()
         }
     loop()
@@ -126,5 +141,6 @@ let myMonitor (mailbox: Actor<string>) =
 let serverRef = spawn system "server" myMonitor
 printfn "server initial"
 
-serverRef <! "start; ;2;xiongruoyang;7";; 
+serverRef <! "start;null;5;xiongruoyang;6";;
 System.Console.ReadLine() |> ignore
+// #time "on"
