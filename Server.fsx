@@ -29,7 +29,7 @@ let configuration =
             }
             remote {
                 helios.tcp {
-                    port = 9003
+                    port = 9001
                     hostname = 127.0.0.1
                 }
             }
@@ -91,38 +91,49 @@ let myMonitor (mailbox: Actor<string>) =
     let mutable clientAddArray = [||]
     let mutable clientRefs = [||]
     let mutable client_count = 0
+    let mutable prefix = ""
     
 
     let rec loop() =
         actor {
             let! msg = mailbox.Receive()
             let parseMsg = msg.Split ';'
-
             match parseMsg.[0] with
             // Process client registeration. If client has not been registered, create a new bucket for it
             // If the connnection has been estibalished before, replace original connection by a new connection.
 
             | "register" -> let mutable register_already = false
+                            let mutable cur_client = -1
                             for i in 0..client_count-1 do
                                 if parseMsg.[1] = clientAddArray.[i] then
                                     register_already <- true
                                     clientRefs.[i] <- select (parseMsg.[1]) system
+                                    cur_client <- i
+                                    
                             if not register_already then
                                 clientAddArray  <- [|parseMsg.[1]|] |> Array.append clientAddArray;
                                 clientRefs  <- [|select (parseMsg.[1]) system|] |> Array.append clientRefs;
+                                cur_client <- client_count
                                 client_count <- client_count+1;
-                            let s = parseMsg.[2] + System.Text.Encoding.ASCII.GetString( [|byte(0x20 + actorCountNum)|])
-                            let cMsg = sprintf "go to work; ;%s;%d;%d" parseMsg.[2] zeroNum protectedIndex//new task
-                            clientRefs.[client_count-1] <! cMsg
+                            printfn "%s" prefix
+                            let s = prefix + System.Text.Encoding.ASCII.GetString( [|byte(0x20 + actorCountNum)|])
+                            let cMsg = sprintf "go to work;%d;%d;%s" zeroNum protectedIndex s //new task
+                            clientRefs.[cur_client] <! cMsg
                             printfn "Count %d, Welcome: %s" client_count parseMsg.[1];
+                            actorCountNum <- actorCountNum + 1
+
             // If the server receive "start" command from the user, server begins to work.
-            | "start" -> actorAppendNum <- int(parseMsg.[2]);{actorCountNum..actorCountNum+actorAppendNum-1} |> Seq.iter(fun a ->
+            | "start" ->prefix <- parseMsg.[3]
+                        protectedIndex <- prefix.Length + 1
                         zeroNum <- int(parseMsg.[4])
+
+                        actorAppendNum <- int(parseMsg.[2]);{actorCountNum..actorCountNum+actorAppendNum-1} |> Seq.iter(fun a ->
                         let s = parseMsg.[3] + System.Text.Encoding.ASCII.GetString( [|byte(0x20 + a)|])
+                        prefix <- parseMsg.[3]
                         protectedIndex <- s.Length
                         actorArray.[a] <! TransitMsg(a, "go to work", s, zeroNum, protectedIndex)
                         ()
-                            );actorAppendNum <- actorCountNum+actorAppendNum
+                            );actorCountNum <- actorCountNum+actorAppendNum
                       
 
             // | "find nothing" -> actori <- int(parseMsg.[1]); 
@@ -146,7 +157,8 @@ let myMonitor (mailbox: Actor<string>) =
                                  for i in 0..client_count-1 do
                                     if clientAddArray.[i] = parseMsg.[1] then
                                         let tempStr = FindCoin.increaseString(bincoin)
-                                        let cMsg = sprintf "go to work;%d;%d;%s"  zeroNum protectedIndex tempStr 
+                                        let cMsg = sprintf "go to work;%d;%d;%s"  zeroNum protectedIndex tempStr
+                                        printfn "send %s" cMsg 
                                         clientRefs.[i] <! cMsg
                                   
 
@@ -156,12 +168,12 @@ let myMonitor (mailbox: Actor<string>) =
             if coin_count%100 = 0 then 
                 let cpu_time = (proc.TotalProcessorTime-cpu_time_stamp).TotalMilliseconds
                 let elapse = timer.ElapsedMilliseconds
-                printfn "CPU time = %dms  Absolute time =%dms   Ratio:%f" (int64 cpu_time) elapse (float(cpu_time)/float(elapse))
+                printfn "CPU time = %dms    =%dms   Ratio:%f" (int64 cpu_time) elapse (float(cpu_time)/float(elapse))
             return! loop()
         }
     loop()
 
 let serverRef = spawn system "server" myMonitor
 printfn "server initial"
-serverRef <! "start;null;3;xiongruoyang;7";;
+serverRef <! "start;null;0;xiongruoyang;5";;
 System.Console.ReadLine() |> ignore

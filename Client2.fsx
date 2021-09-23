@@ -19,13 +19,13 @@ let configuration =
             remote {
                 helios.tcp {
                     port = 2556
-                    hostname = 10.136.7.96
+                    hostname = 127.0.0.1
                 }
             }
         }")
  
 let clientSystem = System.create "Client" configuration
-let serverIP = "akka.tcp://Server@10.136.28.175:9003/user/server"
+let serverIP = "akka.tcp://Server@127.0.0.1:9001/user/server"
 let serverRef = select (serverIP) clientSystem
 
 type MessageSystem =
@@ -36,21 +36,8 @@ let parseBitcoin(s:string) =    let mutable str = s
                                     str <- str.[str.IndexOf(";")+1..]
                                 str
 
-// let myActor (mailbox: Actor<_>) = 
-//     let rec loop() = actor {
-//         let! TransitMsg(n, content, param) = mailbox.Receive()
-//         let sender = mailbox.Sender()
-//         match content with
-//         | "go to work" -> printfn "local actor %d start to work" n ; FindCoin.findCoin(param, 7)
-//         | _ -> printfn "actor don't understand"
-//         let returnMsg = sprintf "bitcoin;%d;%s;"  n "bincoin sequence"
-//         sender <! returnMsg
-//         return! loop()
-//     }
-//     loop()
-
 let myActor ip (mailbox: Actor<string>) =
-    let regisMsg = sprintf "register;%s; " ip
+    let regisMsg = sprintf "register;%s" ip
     serverRef <! regisMsg
     let mutable str = ""
     let rec loop() = actor {
@@ -59,18 +46,18 @@ let myActor ip (mailbox: Actor<string>) =
         let parseMsg = msg.Split ';'
 
         match parseMsg.[0] with
-        | "go to work" -> printfn "local actor start to work";
+        | "go to work" -> printfn "local actor new work";
                           str <- FindCoin.findCoin(parseBitcoin(msg), int(parseMsg.[1]), int(parseMsg.[2]))
         | _ -> printfn "actor don't understand"
-        let returnMsg = sprintf "client bitcoin;%s;_;%s"  ip str
+        let returnMsg = sprintf "bitcoin client;%s;_;%s"  ip str
         serverRef <! returnMsg
         return! loop()
     }
     loop()
 
 
-for i in 1..4 do 
-    let myIP = sprintf "akka.tcp://Client@10.136.7.96:2556/user/client%d" i
+for i in 1..2 do 
+    let myIP = sprintf "akka.tcp://Client@127.0.0.1:2556/user/client%d" i
     let actorName = sprintf "client%d" i
     let clientRef = spawn clientSystem actorName (myActor myIP)
     printfn "local %s starts" actorName
