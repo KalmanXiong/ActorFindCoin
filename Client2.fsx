@@ -54,7 +54,7 @@ let myActor ip (mailbox: Actor<string>) =
         let parseMsg = msg.Split ';'
         match parseMsg.[0] with
         | "go to work" -> printfn "local actor start to work"; 
-                          str <- FindCoin.findCoin(parseMsg.[2], int(parseMsg.[3]))
+                          str <- FindCoin.findCoin(parseMsg.[2], int(parseMsg.[3]), int(parseMsg.[4]))
         | _ -> printfn "actor don't understand"
         let returnMsg = sprintf "client bitcoin;%s;%s"  ip str
         serverRef <! returnMsg
