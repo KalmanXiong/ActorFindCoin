@@ -18,14 +18,14 @@ let configuration =
             }
             remote {
                 helios.tcp {
-                    port = 200
-                    hostname = 127.0.0.1
+                    port = 1000
+                    hostname = 10.136.17.122
                 }
             }
         }")
  
 let clientSystem = System.create "Client" configuration
-let serverIP = "akka.tcp://Server@127.0.0.1:100/user/server"
+let serverIP = "akka.tcp://Server@10.136.106.52:9001/user/server"
 let serverRef = select (serverIP) clientSystem
 
 type MessageSystem =
@@ -57,7 +57,7 @@ let myActor ip (mailbox: Actor<string>) =
 
 
 for i in 1..3 do 
-    let myIP = sprintf "akka.tcp://Client@127.0.0.1:200/user/client%d" i
+    let myIP = sprintf "akka.tcp://Client@10.136.17.122:1000/user/client%d" i
     let actorName = sprintf "client%d" i
     let clientRef = spawn clientSystem actorName (myActor myIP)
     printfn "local %s starts" actorName
