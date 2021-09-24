@@ -3,7 +3,7 @@
 #r "System"
 #r "nuget: Akka.TestKit"
 #r "nuget: Akka.Remote"
-#load "findCoin.fsx"
+#load "FindCoin.fsx"
 
 open System
 open Akka.Actor
