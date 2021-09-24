@@ -16,27 +16,29 @@ project1.zip
 |- FindCoin.fsx
 |- Server.fsx
 |- Client.fsx
-|- finCoin.fsx
 |- README.md
 
 # How to run the code
 
-1. Change the ip address to yours 
+1. Change the ip address to yours at the following place
+        Server.fsx: line 32
+        Client.fsx  line 22, line 28, line 60
+
 2. Run server "dotnet fsi Server.fsx". 
         Default setting:
                 number of actors: 3
                 leading 0's:      5
                 prefix:           xiongruoyang
-                IP:               127.0.0.1:1001
+                IP:               127.0.0.1:2001
 
-3. Run client "dotnet fsi Client.fsx"
+3. Run client "dotnet fsi Client.fsx" （You should run server first)
         Default setting:
                 number of actors: 3
                 leading 0's:      based on the commmand of server
                 prefix:           based on the commmand of server
-                IP:               127.0.0.1:2001
+                IP:               127.0.0.1:3001
 
-4. If you use IOS system, please make sure that the port number is larger than 1000, otherwise the binding request of network is likely to be rejected by your system.
+4. If you use Mac OS, please make sure that the port number shouldn't be too small, otherwise the binding request of network is likely to be rejected by your system.
 
 5. If you meet any bugs when running the code, please let us know. We can show you a successful running sample of the code.
 
@@ -44,7 +46,7 @@ project1.zip
 
 In this project, we use the first character after the prefix as a reserved character. This character is associated with the actor's ID. For example, if the prefix is ​​"tom" and there are 20 actors with IDs 0, 1..19, then we will assign them 0x20 (the first visible character in the ascii table, which is a space), 0x21...0x33 as " The first character after "tom". Since then, the prefixes obtained by the 20 actors are no longer the same "tom", but a four-character string starting with "tom". In this project, theoretically we can assign tasks to 95 (95 represents the number of visible characters in the ascill table) actors. In a real scene, if thousands and millions of actors are needed to work together, we can easily use more bits as reserved characters.
 
-In practice, we use 2-3 actors (the number depends on the OS and hardware). Under this condition, the mining efficiency is the highest, but the CPU usage is only about 200%. Of course, we can also add an appropriate sleep time to the "FindCoin" algorithm to reduce the CPU usage of a single actor mining (but also sacrifice some efficiency), and then use multiple actors, so that we can get about 500% CPU usage. But we didn't do it, it's a little trick.
+In practice, we use 2-3 actors (the number depends on the OS and hardware). Under this condition, the mining efficiency is the highest, but the CPU usage is more than 250%. Of course, we can also add an appropriate sleep time to the "FindCoin" algorithm to reduce the CPU usage of a single actor mining, and then use multiple actors, so that we can get about 500% CPU usage.
 
 # The result of running your program for input 4
 Some samples:
@@ -63,7 +65,7 @@ xiongruoyang! :`2       0000F7DF6CA3EAD4D3278007B34BC9B4A3405DE34F96300A12BB8A1E
 
 # The running time for the above
 
-The Server is tested on Window system with 4 cpu cores. In this experiment, we create a monitor and 3 workers. we print the real time and cpu time as following:
+The Server is tested on Window system with 4 cpu cores. In this experiment, we create a monitor with 3 workers. we print the real time and cpu time as following:
 
 CPU time = 49640 ms    Real time = 19201 ms   CPU time/Real time = 2.585315
 CPU time = 99046 ms    Real time = 40997 ms   CPU time/Real time = 2.415954
@@ -75,7 +77,7 @@ CPU time = 391281 ms   Real time =162018 ms   CPU time/Real time = 2.415048
 
 # The coin with the most 0s you managed to find.
 
-The coin with the most 0s we find is the following coin, which has 8 0's.
+The coin with the most 0s we find is the following coin, which has 8 leading 0's.
 
 xiongruoyang! !P]VB     00000000CA1581573DC08B5E1D5E72F4220C3DD464F6E36711A6E0F1AF992DE6
 xiongruoyang% #7Kx;     00000000D2D8E516FAE700D57D02C4E7DFDD0AFDBC5EFF57CDBE2153B62E5A2B
@@ -86,4 +88,4 @@ xiongruoyang$ 0ZYz]     00000000ECF20896E2FE42FA5C1AF364A1070EF121BB9819D8D0105B
 
 We test our code on two machines currently. However, our code can be adapted more machines if necessary. 
 
-Assuming that we only deploy one actor on each machine, the current largest number of working machines is 256. This depends on how we split a task into more subtask. In our code, if necessary, we can easily change the number to larger one. In theory, it can accommodate any number of machines.
+Assuming that we only deploy one actor on each machine, the current largest number of working machines is 95. This depends on how we split a task into more subtask. In our code, if necessary, we can easily change the number to larger one. In theory, it can accommodate any number of machines.

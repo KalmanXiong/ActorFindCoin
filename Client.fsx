@@ -18,14 +18,14 @@ let configuration =
             }
             remote {
                 helios.tcp {
-                    port = 1000
-                    hostname = 10.136.17.122
+                    port = 2000
+                    hostname = 127.0.0.1
                 }
             }
-        }")
+        }") // revise the IP address to client IP
  
 let clientSystem = System.create "Client" configuration
-let serverIP = "akka.tcp://Server@10.136.106.52:9001/user/server"
+let serverIP = "akka.tcp://Server@127.0.0.1:9001/user/server" // revise the IP address to server IP
 let serverRef = select (serverIP) clientSystem
 
 type MessageSystem =
@@ -42,7 +42,7 @@ let myActor ip (mailbox: Actor<string>) =
     let mutable str = ""
     let rec loop() = actor {
         let! msg = mailbox.Receive()
-        printfn "receive from server: %s" msg
+        printfn "message from server: %s" msg
         let parseMsg = msg.Split ';'
 
         match parseMsg.[0] with
@@ -57,7 +57,7 @@ let myActor ip (mailbox: Actor<string>) =
 
 
 for i in 1..3 do 
-    let myIP = sprintf "akka.tcp://Client@10.136.17.122:1000/user/client%d" i
+    let myIP = sprintf "akka.tcp://Client@127.0.0.1:2000/user/client%d" i // revise the IP address to your client IP
     let actorName = sprintf "client%d" i
     let clientRef = spawn clientSystem actorName (myActor myIP)
     printfn "local %s starts" actorName

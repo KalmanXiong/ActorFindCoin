@@ -29,11 +29,11 @@ let configuration =
             remote {
                 helios.tcp {
                     port = 9001
-                    hostname = 10.136.106.52
+                    hostname = 127.0.0.1
                 }
             }
-        }")
-// 10.136.28.175
+        }") // revise the IP address to Server IP
+
 type MessageSystem =
     | TransitMsg of int * string * string * int * int
 
@@ -142,7 +142,7 @@ let myMonitor (mailbox: Actor<string>) =
             | "bitcoin client" ->coin_count <- coin_count+1
                                  let bincoin = parseBitcoin(msg)
                                  let hash = stringToHashHex(bincoin)
-                                 printfn "%s\t%s" bincoin hash
+                                 printfn "%s\t%s\t(bitcoin from client)" bincoin hash
                                  
                                  for i in 0..client_count-1 do
                                     if clientAddArray.[i] = parseMsg.[1] then
@@ -155,7 +155,7 @@ let myMonitor (mailbox: Actor<string>) =
             | _ -> printfn "manager doesn't understand"
 
             // Measure CPU time and the real time
-            if coin_count%10 = 0 then 
+            if coin_count%5 = 0 then 
                 let cpu_time = (proc.TotalProcessorTime-cpu_time_stamp).TotalMilliseconds
                 let elapse = timer.ElapsedMilliseconds
                 printfn "CPU time = %d ms    Real time = %d ms   CPU time/Real time = %f" (int64 cpu_time) elapse (float(cpu_time)/float(elapse))
@@ -171,5 +171,5 @@ let input(n) = let mutable str = "start;null;2;xiongruoyang;" //"command to moni
                serverRef <! str;;
 
 
-input(6) // n means the number of leading 0's
+input(4) // n means the number of leading 0's
 System.Console.ReadLine() |> ignore
