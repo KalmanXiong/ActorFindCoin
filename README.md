@@ -13,6 +13,7 @@ Member 2:
 
 # Components
 project1.zip
+|- FindCoin.fsx
 |- Server.fsx
 |- Client.fsx
 |- README.md
@@ -37,7 +38,9 @@ project1.zip
 
 # Size of the work unit that you determined results in the best performance for your implementation and an explanation of how you determined it.
 
+In this project, we use the first character after the prefix as a reserved character. This character is associated with the actor's ID. For example, if the prefix is ​​"tom" and there are 20 actors with IDs 0, 1..19, then we will assign them 0x20 (the first visible character in the ascii table, which is a space), 0x21...0x33 as " The first character after "tom". Since then, the prefixes obtained by the 20 actors are no longer the same "tom", but a four-character string starting with "tom". In this project, theoretically we can assign tasks to 95 (95 represents the number of visible characters in the ascill table) actors. In a real scene, if thousands and millions of actors are needed to work together, we can easily use more bits as reserved characters.
 
+In practice, we use 2-3 actors (the number depends on the OS and hardware). Under this condition, the mining efficiency is the highest, but the CPU usage is only about 200%. Of course, we can also add an appropriate sleep time to the "FindCoin" algorithm to reduce the CPU usage of a single actor mining (but also sacrifice some efficiency), and then use multiple actors, so that we can get about 500% CPU usage. But we didn't do it, it's a little trick.
 
 # The result of running your program for input 4
 Some samples:

@@ -28,8 +28,8 @@ let configuration =
             }
             remote {
                 helios.tcp {
-                    port = 100
-                    hostname = 127.0.0.1
+                    port = 9001
+                    hostname = 10.136.106.52
                 }
             }
         }")
@@ -110,7 +110,6 @@ let myMonitor (mailbox: Actor<string>) =
                                 clientRefs  <- [|select (parseMsg.[1]) system|] |> Array.append clientRefs;
                                 cur_client <- client_count
                                 client_count <- client_count+1;
-                            printfn "%s" prefix
                             let s = prefix + System.Text.Encoding.ASCII.GetString( [|byte(0x20 + actorCountNum)|])
                             let cMsg = sprintf "go to work;%d;%d;%s" zeroNum protectedIndex s //new task
                             clientRefs.[cur_client] <! cMsg
@@ -166,9 +165,9 @@ let myMonitor (mailbox: Actor<string>) =
 
 let serverRef = spawn system "server" myMonitor
 printfn "Server init"
-let input(n) = let mutable str = "start;null;3;xiongruoyang;" //"command to monitor;null;number of workrs;prefix;"
+let input(n) = let mutable str = "start;null;2;xiongruoyang;" //"command to monitor;null;number of workrs;prefix;"
                str <- str + string(n)
                serverRef <! str;;
 
-input(7) // n means the number of leading 0's
+input(6) // n means the number of leading 0's
 System.Console.ReadLine() |> ignore
