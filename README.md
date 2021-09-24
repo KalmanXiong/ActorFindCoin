@@ -15,6 +15,29 @@ Member 2:
 project1.zip
 |- Server.fsx
 |- Client.fsx
+|- README.md
+
+# How to run the code
+
+1. Change the ip address to yours 
+2. Run server "dotnet fsi Server.fsx". 
+        Default setting:
+                number of actors: 3
+                leading 0's:      5
+                prefix:           xiongruoyang
+                IP:               127.0.0.1:100
+
+3. Run client "dotnet fsi Client.fsx"
+        Default setting:
+                number of actors: 3
+                leading 0's:      based on the commmand of server
+                prefix:           based on the commmand of server
+                IP:               127.0.0.1:200
+
+
+# Size of the work unit that you determined results in the best performance for your implementation and an explanation of how you determined it.
+
+
 
 # The result of running your program for input 4
 Some samples:
@@ -45,9 +68,10 @@ CPU time = 391281 ms   Real time =162018 ms   CPU time/Real time = 2.415048
 
 # The coin with the most 0s you managed to find.
 
-The coin with the most 0s we find is 
-BitCoin:
-Hash Code:
+The coin with the most 0s we find is 8
+
+xiongruoyang! !P]VB     00000000CA1581573DC08B5E1D5E72F4220C3DD464F6E36711A6E0F1AF992DE6
+xiongruoyang% #7Kx;     00000000D2D8E516FAE700D57D02C4E7DFDD0AFDBC5EFF57CDBE2153B62E5A2B
 
 
 # The largest number of working machines you were able to run your code with

@@ -4,7 +4,6 @@
 #r "nuget: Akka.TestKit"
 #r "nuget: Akka.Remote"
 #load "findCoin.fsx"
-// #time "on"
 
 open System
 open Akka.Actor
@@ -29,7 +28,7 @@ let configuration =
             }
             remote {
                 helios.tcp {
-                    port = 9001
+                    port = 100
                     hostname = 127.0.0.1
                 }
             }
@@ -69,22 +68,18 @@ let myActor (mailbox: Actor<_>) =
     }
     loop()
 
-// let clientRegister addr, addrArray refArray= 
-
 let myMonitor (mailbox: Actor<string>) =
     let mutable actorCountNum = 0
     let mutable actorAppendNum = 0
     let mutable actori = 0
     let mutable zeroNum = 0
     let mutable protectedIndex = 0
-    // let mutable zeroNumArray = Array.create actor_num 0
 
     let actorArray = Array.create actor_num (spawn system "myActor" myActor)
     {0..actor_num-1} |> Seq.iter (fun a ->
         actorArray.[a] <- spawn system (string a) myActor
         ()
     )
-    // let serverRef = select (parseMsg.[1]) myMonitor
     let mutable clientAddArray = [||]
     let mutable clientRefs = [||]
     let mutable client_count = 0
@@ -134,10 +129,6 @@ let myMonitor (mailbox: Actor<string>) =
                         actorArray.[a] <! TransitMsg(a, "go to work", s, zeroNum, protectedIndex)
                         ()
                             );actorCountNum <- actorCountNum+actorAppendNum
-                      
-
-            // | "find nothing" -> actori <- int(parseMsg.[1]); 
-            //                     actorArray.[actori] <! TransitMsg(actori, "go to work", parseMsg.[2]);
   
             | "bitcoin" ->  coin_count <- coin_count+1
                             let bincoin = parseBitcoin(msg)
@@ -179,5 +170,5 @@ let input(n) = let mutable str = "start;null;3;xiongruoyang;" //"command to moni
                str <- str + string(n)
                serverRef <! str;;
 
-input(5)
+input(7) // n means the number of leading 0's
 System.Console.ReadLine() |> ignore
