@@ -43,10 +43,7 @@ let mutable coin_count = 0
 let system = System.create "Server" configuration
 let mutable nn = 0
 
-let proc = Process.GetCurrentProcess()
-let cpu_time_stamp = proc.TotalProcessorTime
-let timer = new Stopwatch()
-timer.Start()
+
 
 let stringToHashHex(s:string) = 
                         let hashHex =  SHA256.Create().ComputeHash(System.Text.Encoding.ASCII.GetBytes(s));
@@ -92,7 +89,10 @@ let myMonitor (mailbox: Actor<string>) =
     let mutable clientRefs = [||]
     let mutable client_count = 0
     let mutable prefix = ""
-    
+    let proc = Process.GetCurrentProcess()
+    let cpu_time_stamp = proc.TotalProcessorTime
+    let timer = new Stopwatch()
+    timer.Start()
 
     let rec loop() =
         actor {
@@ -158,22 +158,26 @@ let myMonitor (mailbox: Actor<string>) =
                                     if clientAddArray.[i] = parseMsg.[1] then
                                         let tempStr = FindCoin.increaseString(bincoin)
                                         let cMsg = sprintf "go to work;%d;%d;%s"  zeroNum protectedIndex tempStr
-                                        printfn "send %s" cMsg 
+                                        // printfn "send %s" cMsg 
                                         clientRefs.[i] <! cMsg
                                   
 
             | _ -> printfn "manager doesn't understand"
 
             // Measure CPU time and the real time
-            if coin_count%100 = 0 then 
+            if coin_count%10 = 0 then 
                 let cpu_time = (proc.TotalProcessorTime-cpu_time_stamp).TotalMilliseconds
                 let elapse = timer.ElapsedMilliseconds
-                printfn "CPU time = %dms    =%dms   Ratio:%f" (int64 cpu_time) elapse (float(cpu_time)/float(elapse))
+                printfn "CPU time = %d ms    Real time = %d ms   CPU time/Real time = %f" (int64 cpu_time) elapse (float(cpu_time)/float(elapse))
             return! loop()
         }
     loop()
 
 let serverRef = spawn system "server" myMonitor
-printfn "server initial"
-serverRef <! "start;null;0;xiongruoyang;5";;
+printfn "Server init"
+let input(n) = let mutable str = "start;null;3;xiongruoyang;" //"command to monitor;null;number of workrs;prefix;"
+               str <- str + string(n)
+               serverRef <! str;;
+
+input(5)
 System.Console.ReadLine() |> ignore

@@ -19,13 +19,13 @@ let configuration =
             remote {
                 helios.tcp {
                     port = 2556
-                    hostname = 127.0.0.1
+                    hostname = 10.136.57.239
                 }
             }
         }")
  
 let clientSystem = System.create "Client" configuration
-let serverIP = "akka.tcp://Server@127.0.0.1:9001/user/server"
+let serverIP = "akka.tcp://Server@10.136.254.41:9001/user/server"
 let serverRef = select (serverIP) clientSystem
 
 type MessageSystem =
@@ -46,8 +46,8 @@ let myActor ip (mailbox: Actor<string>) =
         let parseMsg = msg.Split ';'
 
         match parseMsg.[0] with
-        | "go to work" -> printfn "local actor new work";
-                          str <- FindCoin.findCoin(parseBitcoin(msg), int(parseMsg.[1]), int(parseMsg.[2]))
+        | "go to work" -> str <- FindCoin.findCoin(parseBitcoin(msg), int(parseMsg.[1]), int(parseMsg.[2]))
+                          printfn "local actor new work";
         | _ -> printfn "actor don't understand"
         let returnMsg = sprintf "bitcoin client;%s;_;%s"  ip str
         serverRef <! returnMsg
@@ -57,7 +57,7 @@ let myActor ip (mailbox: Actor<string>) =
 
 
 for i in 1..2 do 
-    let myIP = sprintf "akka.tcp://Client@127.0.0.1:2556/user/client%d" i
+    let myIP = sprintf "akka.tcp://Client@10.136.57.239:2556/user/client%d" i
     let actorName = sprintf "client%d" i
     let clientRef = spawn clientSystem actorName (myActor myIP)
     printfn "local %s starts" actorName
