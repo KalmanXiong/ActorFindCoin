@@ -171,5 +171,5 @@ let input(n) = let mutable str = "start;null;2;xiongruoyang;" //"command to moni
                serverRef <! str;;
 
 
-input(4) // n means the number of leading 0's
+input(4) // 4 means the number of leading 0's
 System.Console.ReadLine() |> ignore

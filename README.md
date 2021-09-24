@@ -26,17 +26,17 @@ project1.zip
 
 2. Run server "dotnet fsi Server.fsx". 
         Default setting:
-                number of actors: 3
+                number of actors: 2
                 leading 0's:      5
                 prefix:           xiongruoyang
-                IP:               127.0.0.1:2001
+                IP:               127.0.0.1:9001
 
 3. Run client "dotnet fsi Client.fsx" （You should run server first)
         Default setting:
                 number of actors: 3
                 leading 0's:      based on the commmand of server
                 prefix:           based on the commmand of server
-                IP:               127.0.0.1:3001
+                IP:               127.0.0.1:2000
 
 4. If you use Mac OS, please make sure that the port number shouldn't be too small, otherwise the binding request of network is likely to be rejected by your system.
 
