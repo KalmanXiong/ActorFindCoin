@@ -16,6 +16,7 @@ project1.zip
 |- FindCoin.fsx
 |- Server.fsx
 |- Client.fsx
+|- finCoin.fsx
 |- README.md
 
 # How to run the code
@@ -26,15 +27,18 @@ project1.zip
                 number of actors: 3
                 leading 0's:      5
                 prefix:           xiongruoyang
-                IP:               127.0.0.1:100
+                IP:               127.0.0.1:1001
 
 3. Run client "dotnet fsi Client.fsx"
         Default setting:
                 number of actors: 3
                 leading 0's:      based on the commmand of server
                 prefix:           based on the commmand of server
-                IP:               127.0.0.1:200
+                IP:               127.0.0.1:2001
 
+4. If you use IOS system, please make sure that the port number is larger than 1000, otherwise the binding request of network is likely to be rejected by your system.
+
+5. If you meet any bugs when running the code, please let us know. We can show you a successful running sample of the code.
 
 # Size of the work unit that you determined results in the best performance for your implementation and an explanation of how you determined it.
 
@@ -71,10 +75,11 @@ CPU time = 391281 ms   Real time =162018 ms   CPU time/Real time = 2.415048
 
 # The coin with the most 0s you managed to find.
 
-The coin with the most 0s we find is 8
+The coin with the most 0s we find is the following coin, which has 8 0's.
 
 xiongruoyang! !P]VB     00000000CA1581573DC08B5E1D5E72F4220C3DD464F6E36711A6E0F1AF992DE6
 xiongruoyang% #7Kx;     00000000D2D8E516FAE700D57D02C4E7DFDD0AFDBC5EFF57CDBE2153B62E5A2B
+xiongruoyang$ 0ZYz]     00000000ECF20896E2FE42FA5C1AF364A1070EF121BB9819D8D0105B380A9541
 
 
 # The largest number of working machines you were able to run your code with

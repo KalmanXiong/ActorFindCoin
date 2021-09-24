@@ -165,9 +165,11 @@ let myMonitor (mailbox: Actor<string>) =
 
 let serverRef = spawn system "server" myMonitor
 printfn "Server init"
+
 let input(n) = let mutable str = "start;null;2;xiongruoyang;" //"command to monitor;null;number of workrs;prefix;"
                str <- str + string(n)
                serverRef <! str;;
+
 
 input(6) // n means the number of leading 0's
 System.Console.ReadLine() |> ignore
