@@ -15,7 +15,7 @@ Member 2:
 project1.zip
 |- Server.fsx
 |- Client.fsx
-|
+|- finCoin.fsx
 |- README.md
 
 # How to run the code
