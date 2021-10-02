@@ -1,16 +1,5 @@
 # DOSP Project 1
 
-# Group Member
-Member 1:
-        Name: Xiao Li
-        UFID: 3475-9600
-        Email: xiao.li@ufl.edu
-
-Member 2: 
-        Name: Ruoyang Xiong
-        UFID: 5311-2826
-        Email: xiongruoyang@ufl.edu
-
 # Components
 project1.zip
 |- FindCoin.fsx
